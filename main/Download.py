@@ -8,6 +8,8 @@ import re
 import urllib,urllib2
 
 import logging
+
+import sys
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.wait import WebDriverWait
@@ -35,7 +37,8 @@ class DownloadImg:
         logger.info("开始下载...")
         # 等待lb 的class出现 超时20s
         driver.get(url)
-        logger.info("载中...")
+
+        logger.info("加载中...")
 
         # page_content = driver.page_source.encode("utf-8")
         # logger.info("=====>" + page_content)
@@ -70,6 +73,7 @@ class DownloadImg:
             self.save(img_800, 'D:/images/' + item_name + "/800/")
 
         self.driver.close()
+        driver.quit()  # 关闭并退出浏览器
 
     def find_value(self, s, prop):
 
@@ -92,8 +96,12 @@ class DownloadImg:
             urllib.urlretrieve(img_url, path)
             logger.info(u"下载:" + img_url + u"成功,保存到:" + path)
         except Exception, e:
-            logger.error("Error:" + e.message)
-            logger.info(u'【错误】当前图片无法下载:' + img_url)
+            logger.error(e)
+            logger.error(u'[Error] 当前图片无法下载:' + img_url)
+
+    def quit(self):
+        """退出浏览器"""
+        self.driver.quit()
 
     def test_log(self):
         logger.debug('this is debug info')
@@ -104,9 +112,15 @@ class DownloadImg:
         logger.critical('this is critical message')
 
 if __name__ == "__main__":
-    downloadImg = DownloadImg()
-    item = raw_input("请输入淘宝的连接：")
+
     # https://item.taobao.com/item.htm?spm=a219r.lm5644.14.12.70b3a555sLHber&id=44407550968&ns=1&abbucket=12
     # https://item.taobao.com/item.htm?id=44418861346&spm=a21c0.8077897.349447.8.7280428dPzqkcS&type=2&e=m%3D2%26s%3DLVOuwTkFD09w4vFB6t2Z2ueEDrYVVa646og1Ii54c8gYX8TY%2BNEwdw3G0JeI%2FUjeTHm2guh0YLtNDhFsDfpb399zaMqb%2F6lbbEpdulP%2F3FTx65x%2Frj5SHz%2BYs7%2Fl%2BgH1VFZrSPJMs4lBj5mHSeJnGSNsYzxP%2FSkvmfzzQyWfmjYx8Oy1mUIqCA%3D%3D&spm=a21c0.8077897.349447.8.7280428dPzqkcS&type=2&e=m%3D2%26s%3DLVOuwTkFD09w4vFB6t2Z2ueEDrYVVa646og1Ii54c8gYX8TY%2BNEwdw3G0JeI%2FUjeTHm2guh0YLtNDhFsDfpb399zaMqb%2F6lbbEpdulP%2F3FTx65x%2Frj5SHz%2BYs7%2Fl%2BgH1VFZrSPJMs4lBj5mHSeJnGSNsYzxP%2FSkvmfzzQyWfmjYx8Oy1mUIqCA%3D%3D
-    downloadImg.download(item)
-    downloadImg.test_log()
+    downloadImg = None
+    try:
+        downloadImg = DownloadImg()
+        item = raw_input("请输入淘宝的连接：")
+        downloadImg.download(item)
+        downloadImg.test_log()
+    finally:
+        if downloadImg is not None:
+            downloadImg.quit()  # 关闭并退出浏览器
